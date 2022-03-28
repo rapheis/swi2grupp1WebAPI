@@ -2,7 +2,7 @@
 {
     public class Film
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
 
 
 
@@ -10,9 +10,10 @@
 
 
 
-        public string? Picture { get; set; }
+        public int Rating { get; set; }
 
 
 
+        public string? Feeling { get; set; }
     }
 }

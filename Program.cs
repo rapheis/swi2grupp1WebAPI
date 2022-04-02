@@ -1,5 +1,10 @@
 var builder = WebApplication.CreateBuilder(args);
 
+// Variablen aus appsetting.json holen
+swi2grupp1WebAPI.AppConfiguration.AzureServiceBusConnectionString = builder.Configuration["AzureServiceBusConnectionString"];
+swi2grupp1WebAPI.AppConfiguration.AzureServiceBusRequests = builder.Configuration["AzureServiceBusRequests"];
+swi2grupp1WebAPI.AppConfiguration.AzureServiceBusResponse = builder.Configuration["AzureServiceBusResponse"];
+
 // Add services to the container.
 
 builder.Services.AddControllers();

@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
-using Azure.Messaging.ServiceBus;
-
+﻿using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
-using Microsoft.ServiceBus.Messaging;
+using swi2grupp1WebAPI.Data;
+using System.Drawing;
+//using Microsoft.ServiceBus.Messaging;
 using System.Text;
 
 namespace swi2grupp1WebAPI.MessageHandler
@@ -13,12 +13,14 @@ namespace swi2grupp1WebAPI.MessageHandler
         string conn;
         string queue;
         string responseQueue;
+        ConvertFilm convMovie;
 
         public MessageSenderAndReceiver()
         {
             this.conn = AppConfiguration.AzureServiceBusConnectionString;
             this.queue = AppConfiguration.AzureServiceBusRequests;
             this.responseQueue = AppConfiguration.AzureServiceBusResponse;
+            this.convMovie = new ConvertFilm();
         }
 
         // Get bearbeiten: Parameter als Command-Objekt an Azure Service Bus als Sessionless-Message senden
@@ -51,31 +53,51 @@ namespace swi2grupp1WebAPI.MessageHandler
             await sender.DisposeAsync();
 
             // hier die Reply-Message erhalten als Session-Message in gewünschter Queue erhalten
-            Film[] filmListe;
+            FilmMsg[] movieListemsg;
+            Film[] movieListe;
             ServiceBusSessionReceiver receiver = await client.AcceptSessionAsync(this.responseQueue, replyToSessionId);
             ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync();
             if (receivedMessage != null)
             {
                 string text = System.Text.Encoding.UTF8.GetString(receivedMessage.Body);
-                Console.WriteLine("Wieder erhaltener Text: " + text);
-                filmListe = JsonConvert.DeserializeObject<Film[]>(text);
+                //Console.WriteLine("Wieder erhaltener Text: " + text);
+                // erhaltene Liste in einen Objekt-Array konvertieren
+                movieListemsg = JsonConvert.DeserializeObject<FilmMsg[]>(text);
+
+                // den Objekt-Array von WeatherForecastMsg in WeatherForecast konvertieren
+                if (movieListemsg == null)
+                {
+                    movieListemsg = new FilmMsg[0];
+                }
+                movieListe = new Film[movieListemsg.Length];
+                for (int i = 0; i < movieListemsg.Length; i++)
+                {
+                    movieListe[i] = convMovie.GetFilm(movieListemsg[i]);
+                }
+                Console.WriteLine("Erhaltene Objekte: " + movieListemsg.Length);
             }
             else
             {
-                filmListe = new Film[0];
+                movieListe = new Film[0];
             }
+
             await receiver.DisposeAsync();
             await client.DisposeAsync();
 
-            return filmListe;
+            return movieListe;
         }
 
         // POST und PUT bearbeiten: Parameter als WeatherForecast-Objekt an Azure Service Bus als Sessionless-Message senden
         // das erstellte/geänderte Datenobjekt als Json-Objekte mit einer Session-Message erhalten
         public async Task<Film> SendFilmAsync(Film film)
         {
-            // Datenobjekt serialisieren
-            var jsonString = JsonConvert.SerializeObject(film);
+
+            // Bilder zwischenspeichern, später dann unten in CosmosDB speichern
+            String bild = film.Bild;
+            String vorschau = film.Vorschau;
+
+            // Datenobjekt serialisieren, Objekt noch konvertieren
+            var jsonString = JsonConvert.SerializeObject(convMovie.GetFilmMsg(film));
             // Client mit der Connection zum Azure Service Bus
             ServiceBusClient client = new ServiceBusClient(this.conn);
             // Senderobjekt mit dem Warteschlangennamen
@@ -106,19 +128,25 @@ namespace swi2grupp1WebAPI.MessageHandler
                 }
             }
             // hier die Retour-Message erhalten
-            Film movie;
+            FilmMsg moviemsg;
             ServiceBusSessionReceiver receiver = await client.AcceptSessionAsync(this.responseQueue, replyToSessionId);
             ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync();
             if (receivedMessage != null)
             {
                 string text = System.Text.Encoding.UTF8.GetString(receivedMessage.Body);
-                Console.WriteLine("Wieder erhaltener Text: " + text);
-                movie = JsonConvert.DeserializeObject<Film>(text);
+                //Console.WriteLine("Wieder erhaltener Text: " + text);
+                moviemsg = JsonConvert.DeserializeObject<FilmMsg>(text);
+                Console.WriteLine("Erhaltene Id: " + moviemsg.Id);
             }
             else
             {
-                movie = new Film();
+                moviemsg = new FilmMsg();
             }
+            Film movie = convMovie.GetFilm(moviemsg);
+            // ursprüngliche Bilder wieder hinzufügen
+            movie.Bild = bild;
+            movie.Vorschau = vorschau;
+
             await receiver.DisposeAsync();
             await client.DisposeAsync();
 
@@ -164,19 +192,21 @@ namespace swi2grupp1WebAPI.MessageHandler
                 }
             }
             // hier die Retour-Message erhalten
-            Film movie;
+            FilmMsg moviemsg;
             ServiceBusSessionReceiver receiver = await client.AcceptSessionAsync(this.responseQueue, replyToSessionId);
             ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync();
             if (receivedMessage != null)
             {
                 string text = System.Text.Encoding.UTF8.GetString(receivedMessage.Body);
-                Console.WriteLine("Wieder erhaltener Text: " + text);
-                movie = JsonConvert.DeserializeObject<Film>(text);
+                //Console.WriteLine("Wieder erhaltener Text: " + text);
+                moviemsg = JsonConvert.DeserializeObject<FilmMsg>(text);
+                Console.WriteLine("Erhaltene Id: " + moviemsg.Id);
             }
             else
             {
-                movie = new Film();
+                moviemsg = new FilmMsg();
             }
+            Film movie = convMovie.GetFilm(moviemsg);
             await receiver.DisposeAsync();
             await client.DisposeAsync();
 

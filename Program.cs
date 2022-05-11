@@ -5,6 +5,12 @@ swi2grupp1WebAPI.AppConfiguration.AzureServiceBusConnectionString = builder.Conf
 swi2grupp1WebAPI.AppConfiguration.AzureServiceBusRequests = builder.Configuration["AzureServiceBusRequests"];
 swi2grupp1WebAPI.AppConfiguration.AzureServiceBusResponse = builder.Configuration["AzureServiceBusResponse"];
 
+// für CosmosDB
+
+swi2grupp1WebAPI.AppConfiguration.CosmosEndpointUri = builder.Configuration["CosmosEndpointUri"];
+swi2grupp1WebAPI.AppConfiguration.CosmosPrimaryKey = builder.Configuration["CosmosPrimaryKey"];
+
+
 // Add services to the container.
 
 builder.Services.AddControllers();

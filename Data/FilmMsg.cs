@@ -1,14 +1,16 @@
-﻿namespace swi2grupp1WebAPI
+﻿namespace swi2grupp1WebAPI.Data
 {
-    public class Film
+
+    /*
+     * Datenobjekt Wettervorhersage für den Message-Broker, d.h. ohne Bild
+     */
+    public class FilmMsg
     {
         public int Id { get; set; }
         public string? Name { get; set; }
-
         public int Rating { get; set; }
 
         public string? Feeling { get; set; }
-        public string? Bild { get; set; }
-        public string? Vorschau { get; set; }
+
     }
 }

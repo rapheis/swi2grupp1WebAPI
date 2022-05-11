@@ -6,5 +6,9 @@
         public static string AzureServiceBusRequests { get; set; }
         public static string AzureServiceBusResponse { get; set; }
 
+        // Konstanten für CosomosDB
+        public static string CosmosEndpointUri { get; set; }
+        public static string CosmosPrimaryKey { get; set; }
+
     }
 }

@@ -19,6 +19,7 @@ namespace swi2grupp1WebAPI.Controllers
 
 
         private readonly ILogger<FilmController> _logger;
+        private ConvertFilm convertMovie = new ConvertFilm();
         public FilmController(ILogger<FilmController> logger)
         {
             _logger = logger;
@@ -38,13 +39,17 @@ namespace swi2grupp1WebAPI.Controllers
             // über Azure Service Bus die Daten in der DB updaten
             Film[] films = await new MessageSenderAndReceiver().SendGetFilmAsync((int)id, name); ;
             // nur für das erste Objekt (sofern vorhanden), Bild lesen und hinzufügen
-            if (films.Length > 0)
+            for (int i = 0; i < films.Length; i++)
             {
-                FilmImage moviei = await new CosmosDAC().GetImage(films[0].Id.ToString());
-                if (moviei.Id == films[0].Id.ToString())
+                FilmImage moviei = await new CosmosDAC().GetImage(films[i].Id.ToString());
+                if (moviei.Id == films[i].Id.ToString())
                 {
-                    films[0].Bild = moviei.Image;
-                    films[0].Vorschau = moviei.Preview;
+                    // nur beim ersten ganzes Bild laden
+                    if (i == 0)
+                    {
+                        films[0].Bild = moviei.Image;
+                    }
+                    films[i].Vorschau = moviei.Preview;
                 }
             }
             return films;
@@ -64,11 +69,7 @@ namespace swi2grupp1WebAPI.Controllers
             // Bild noch an Cosmos DB senden
             if (movie.Bild != null)
             {
-                FilmImage moviei = new FilmImage();
-                moviei.Id = movie.Id.ToString();
-                moviei.Image = movie.Bild;
-                moviei.Preview = movie.Vorschau;
-                await new CosmosDAC().AddImage(moviei);
+                await new CosmosDAC().AddImage(convertMovie.GetFilmImage(movie));
             }
             return movie;
         }
@@ -87,11 +88,7 @@ namespace swi2grupp1WebAPI.Controllers
             // Bild noch an Cosmos DB senden
             if (movie.Bild != null)
             {
-                FilmImage moviei = new FilmImage();
-                moviei.Id = movie.Id.ToString();
-                moviei.Image = movie.Bild;
-                moviei.Preview = movie.Vorschau;
-                await new CosmosDAC().ReplaceImage(moviei);
+                await new CosmosDAC().ReplaceImage(convertMovie.GetFilmImage(movie));
             }
             return movie;
         }

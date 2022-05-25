@@ -9,9 +9,7 @@ using Microsoft.Azure.Cosmos;
 namespace swi2grupp1WebAPI.DataAccessLayer
 {
     public class CosmosDAC
-
     {
-
         // The Azure Cosmos DB endpoint for running this sample.
         private static readonly string EndpointUri = AppConfiguration.CosmosEndpointUri;
 
@@ -28,8 +26,8 @@ namespace swi2grupp1WebAPI.DataAccessLayer
         private Container container;
 
         // The name of the database and container we will create
-        private string dBName = "ostdb";
-        private string containerName = "swi2fs22grp1";
+        private string dBName = "swi2gruppe1CosmosDB";
+        private string containerName = "swi2gruppe1Collection";
 
         // Konstruktor
         public CosmosDAC()

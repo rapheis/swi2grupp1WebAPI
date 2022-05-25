@@ -21,7 +21,7 @@
         /*
         * Konvertiert WeatherForecastMsg in ein WeatherForecast-Objekt
         */
-        public Film GetFilm(FilmMsg moviemsg)
+        public Film GetFilmFromMsg(FilmMsg moviemsg)
         {
             Film movie = new Film();
             movie.Id = moviemsg.Id;
@@ -32,5 +32,14 @@
             // Problem ist die Messagegrösse (max. 256 KB im Standard!)
             return movie;
         }
+        public FilmImage GetFilmImage(Film movie)
+        {
+            FilmImage movieimg = new FilmImage();
+            movieimg.Id = movie.Id.ToString();
+            movieimg.Image = movie.Bild;
+            movieimg.Preview = movie.Vorschau;
+            return movieimg;
+        }
+
     }
 }

@@ -3,7 +3,8 @@
     public static class AppConfiguration
     {
         public static string AzureServiceBusConnectionString { get; set; }
-        public static string AzureServiceBusRequests { get; set; }
+        public static string AzureServiceBusCommand { get; set; }
+        public static string AzureServiceBusQuery { get; set; }
         public static string AzureServiceBusResponse { get; set; }
 
         // Konstanten für CosomosDB

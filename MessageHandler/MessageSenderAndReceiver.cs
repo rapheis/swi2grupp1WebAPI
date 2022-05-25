@@ -11,14 +11,18 @@ namespace swi2grupp1WebAPI.MessageHandler
     {
         // AzureBus-Connectionsstring und Queue, siehe appsettings.json, program.cs und AppConfiguration.cs
         string conn;
-        string queue;
+        string queueCommand;
+        string queueQuery;
         string responseQueue;
         ConvertFilm convMovie;
 
         public MessageSenderAndReceiver()
         {
             this.conn = AppConfiguration.AzureServiceBusConnectionString;
-            this.queue = AppConfiguration.AzureServiceBusRequests;
+
+            this.queueCommand = AppConfiguration.AzureServiceBusCommand;
+            this.queueQuery = AppConfiguration.AzureServiceBusQuery;
+
             this.responseQueue = AppConfiguration.AzureServiceBusResponse;
             this.convMovie = new ConvertFilm();
         }
@@ -36,7 +40,7 @@ namespace swi2grupp1WebAPI.MessageHandler
             // Client mit der Connection zum Azure Service Bus
             ServiceBusClient client = new ServiceBusClient(this.conn);
             // Senderobjekt mit dem Warteschlangennamen
-            ServiceBusSender sender = client.CreateSender(this.queue);
+            ServiceBusSender sender = client.CreateSender(this.queueQuery);
 
             // Message erstellen
             var replyToSessionId = Guid.NewGuid().ToString();
@@ -72,8 +76,9 @@ namespace swi2grupp1WebAPI.MessageHandler
                 movieListe = new Film[movieListemsg.Length];
                 for (int i = 0; i < movieListemsg.Length; i++)
                 {
-                    movieListe[i] = convMovie.GetFilm(movieListemsg[i]);
+                    movieListe[i] = convMovie.GetFilmFromMsg(movieListemsg[i]);
                 }
+                await receiver.CompleteMessageAsync(receivedMessage);
                 Console.WriteLine("Erhaltene Objekte: " + movieListemsg.Length);
             }
             else
@@ -101,7 +106,7 @@ namespace swi2grupp1WebAPI.MessageHandler
             // Client mit der Connection zum Azure Service Bus
             ServiceBusClient client = new ServiceBusClient(this.conn);
             // Senderobjekt mit dem Warteschlangennamen
-            ServiceBusSender sender = client.CreateSender(this.queue);
+            ServiceBusSender sender = client.CreateSender(this.queueCommand);
             // Batch erstellen
             ServiceBusMessageBatch messageBatch = await sender.CreateMessageBatchAsync();
             // Message erstellen
@@ -137,12 +142,13 @@ namespace swi2grupp1WebAPI.MessageHandler
                 //Console.WriteLine("Wieder erhaltener Text: " + text);
                 moviemsg = JsonConvert.DeserializeObject<FilmMsg>(text);
                 Console.WriteLine("Erhaltene Id: " + moviemsg.Id);
+                await receiver.CompleteMessageAsync(receivedMessage);
             }
             else
             {
                 moviemsg = new FilmMsg();
             }
-            Film movie = convMovie.GetFilm(moviemsg);
+            Film movie = convMovie.GetFilmFromMsg(moviemsg);
             // ursprüngliche Bilder wieder hinzufügen
             movie.Bild = bild;
             movie.Vorschau = vorschau;
@@ -160,7 +166,7 @@ namespace swi2grupp1WebAPI.MessageHandler
             // Client mit der Connection zum Azure Service Bus
             ServiceBusClient client = new ServiceBusClient(this.conn);
             // Senderobjekt mit dem Warteschlangennamen
-            ServiceBusSender sender = client.CreateSender(this.queue);
+            ServiceBusSender sender = client.CreateSender(this.queueCommand);
             // Batch erstellen
             ServiceBusMessageBatch messageBatch = await sender.CreateMessageBatchAsync();
             // Befehlsobjekt erstellen
@@ -201,12 +207,13 @@ namespace swi2grupp1WebAPI.MessageHandler
                 //Console.WriteLine("Wieder erhaltener Text: " + text);
                 moviemsg = JsonConvert.DeserializeObject<FilmMsg>(text);
                 Console.WriteLine("Erhaltene Id: " + moviemsg.Id);
+                await receiver.CompleteMessageAsync(receivedMessage);
             }
             else
             {
                 moviemsg = new FilmMsg();
             }
-            Film movie = convMovie.GetFilm(moviemsg);
+            Film movie = convMovie.GetFilmFromMsg(moviemsg);
             await receiver.DisposeAsync();
             await client.DisposeAsync();
 

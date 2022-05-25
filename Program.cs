@@ -2,7 +2,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Variablen aus appsetting.json holen
 swi2grupp1WebAPI.AppConfiguration.AzureServiceBusConnectionString = builder.Configuration["AzureServiceBusConnectionString"];
-swi2grupp1WebAPI.AppConfiguration.AzureServiceBusRequests = builder.Configuration["AzureServiceBusRequests"];
+swi2grupp1WebAPI.AppConfiguration.AzureServiceBusCommand = builder.Configuration["AzureServiceBusCommand"];
+swi2grupp1WebAPI.AppConfiguration.AzureServiceBusQuery = builder.Configuration["AzureServiceBusQuery"];
 swi2grupp1WebAPI.AppConfiguration.AzureServiceBusResponse = builder.Configuration["AzureServiceBusResponse"];
 
 // für CosmosDB
